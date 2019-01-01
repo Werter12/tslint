@@ -50,3 +50,44 @@ describe("no-implicit-dependencies", () => {
         assert.equal(linter.getResult().errorCount, 1, "expected one error");
     });
 });
+
+describe("import-from-emotion", () => {
+    it("react-emotion errors", () => {
+        const linter = new Linter({
+            fix: false,
+            formatter: "prose",
+        });
+        const config = parseConfigFile({
+            rules: {
+                "import-from-emotion": true,
+            },
+        });
+        linter.lint(
+            "/test.ts.lint",
+            `
+                import { css } from 'react-emotion';
+            `,
+            config,
+        );
+        assert.equal(linter.getResult().errorCount, 1, "expected one error");
+
+        linter.lint(
+            "/test.ts.lint",
+            `
+                import styled, { css } from 'react-emotion';
+            `,
+            config,
+        );
+        assert.equal(linter.getResult().errorCount, 2, "expected two errors");
+
+        linter.lint(
+            "/test.ts.lint",
+            `
+                import styled, { css as somethingElse } from 'react-emotion';
+            `,
+            config,
+        );
+
+        assert.equal(linter.getResult().errorCount, 3, "expected three errors");
+    });
+});
